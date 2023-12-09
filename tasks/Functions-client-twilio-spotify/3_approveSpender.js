@@ -37,5 +37,5 @@ task("functions-approve-spender", "Approves RecordLabel to pay STC to artist")
 
     await stableCoinContract.approve(recordLabelAddress, deployerTokenBalance)
 
-    console.log("\nRecordLabel is now approved to pay artists...")
+    console.log("\nRecordLabel is now approved to pay playlists...")
   })

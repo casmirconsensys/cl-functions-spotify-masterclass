@@ -1,7 +1,7 @@
 const { types } = require("hardhat/config")
 const { VERIFICATION_BLOCK_CONFIRMATIONS, networkConfig } = require("../../network-config")
 
-task("functions-initialize-artist", "Seed RecordLabel with Artist Data")
+task("functions-initialize-playlist", "Seed RecordLabel with Playlist Data")
   .addParam("clientContract", "Contract address for RecordLabel")
   .setAction(async (taskArgs) => {
     if (network.name === "hardhat") {
@@ -18,44 +18,46 @@ task("functions-initialize-artist", "Seed RecordLabel with Artist Data")
     const accounts = await ethers.getSigners()
 
     if (!accounts[1])
-      throw new Error("Artist Wallet Address missing - you may need to add a second private key to hardhat config.")
+      throw new Error("Playlist Wallet Address missing - you may need to add a second private key to hardhat config.")
 
-    // Pretend your second wallet address is the Artist's wallet, and setup ArtistData on RecordLabel to point to your address.
-    const artistAddress = accounts[1].address // This pretends your deployer wallet is the artist's.
+    // Pretend your second wallet address is the Playlist's wallet, and setup PlaylistData on RecordLabel to point to your address.
+    const playlistAddress = accounts[1].address // This pretends your deployer wallet is the playlist's.
 
-    if (!artistAddress || !ethers.utils.isAddress(artistAddress)) {
+    if (!playlistAddress || !ethers.utils.isAddress(playlistAddress)) {
       throw new Error("Invalid Second Wallet Address. Please check SECOND_PRIVATE_KEY in env vars.")
     }
 
-    const [artistId, artistName, artistListenerCount, artistEmail] = requestConfig.args
+    const [playlistId, playlistName, playlistListenerCount, playlistEmail] = requestConfig.args
     console.log(
-      "\n Adding following artist data to RecordLabel: ",
-      artistId,
-      artistName,
-      artistListenerCount,
-      artistEmail
+      "\n Adding following playlist data to RecordLabel: ",
+      playlistId,
+      playlistName,
+      playlistListenerCount,
+      playlistEmail
     )
 
     const clientContractFactory = await ethers.getContractFactory("RecordLabel")
     const clientContract = await clientContractFactory.attach(recordLabelAddress)
 
     try {
-      const setArtistDataTx = await clientContract.setArtistData(
-        artistId,
-        artistName,
-        artistEmail,
-        artistListenerCount,
+      const setPlaylistDataTx = await clientContract.setPlaylistData(
+        playlistId,
+        playlistName,
+        playlistEmail,
+        playlistListenerCount,
         0, //last paid amount: 18 decimal places
         0, // total paid till date: 18 decimal places
-        artistAddress
+        playlistAddress
       )
-      await setArtistDataTx.wait(1)
+      await setPlaylistDataTx.wait(1)
     } catch (error) {
       console.log(
-        `\nError writing artist data for ${artistId} at address ${artistAddress} to the Record Label: ${error}`
+        `\nError writing playlist data for ${playlistId} at address ${playlistAddress} to the Record Label: ${error}`
       )
       throw error
     }
 
-    console.log(`\nSeeded initial Artist Data for ${artistName} and assigned them wallet address ${artistAddress}.`)
+    console.log(
+      `\nSeeded initial Playlist Data for ${playlistName} and assigned them wallet address ${playlistAddress}.`
+    )
   })

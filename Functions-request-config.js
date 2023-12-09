@@ -3,6 +3,12 @@ const fs = require("fs")
 // Loads environment variables from .env.enc file (if it exists)
 require("@chainlink/env-enc").config()
 
+// Soundchart Playlist UuIDs for sandbox are available from https://doc.api.soundcharts.com/api/v2/doc/sandbox-data
+
+const NEW_MUSIC_FRIDAY = "11e84493-4135-a14e-bca2-a0369fe50396"
+
+const ALL_GROWN_UP = "86694fd0-cdce-11e8-8cff-549f35161576"
+
 const Location = {
   Inline: 0,
   Remote: 1,
@@ -24,26 +30,58 @@ const ReturnType = {
 
 // Configure the request by setting the fields below
 const requestConfig = {
-  // Location of source code (only Inline is currently supported)
   codeLocation: Location.Inline,
-  // Code language (only JavaScript is currently supported)
+
   codeLanguage: CodeLanguage.JavaScript,
-  // ETH wallet key used to sign secrets so they cannot be accessed by a 3rd party
+
+  source: fs.readFileSync("./Twilio-Spotify-Functions-Source-Example.js").toString(),
+
   walletPrivateKey: process.env["PRIVATE_KEY"],
+
+  args: [
+    NEW_MUSIC_FRIDAY,
+    "New Music Friday",
+    "14000000", // 14 million
+    process.env.ARTIST_EMAIL || "founder@nftyco.com",
+    // Uncomment the below when you have set these env vars
+    //   process.env.VERIFIED_SENDER,
+  ],
+
+  expectedReturnType: ReturnType.int256,
+
   secretsURLs: [],
-  // String containing the source code to be executed
-  source: fs.readFileSync("./calculation-example.js").toString(),
-  // Secrets can be accessed within the source code with `secrets.varName` (ie: secrets.apiKey). The secrets object can only contain string values.
-  // Per-node secrets objects assigned to each DON member. When using per-node secrets, nodes can only use secrets which they have been assigned.
-  // Args (string only array) can be accessed within the source code with `args[index]` (ie: args[0]).
-  args: ["1", "bitcoin", "btc-bitcoin", "btc", "1000000", "450"],
-  // Expected type of the returned value
-  expectedReturnType: ReturnType.uint256,
-  // Redundant URLs which point to encrypted off-chain secrets
-  secrets:{},
-  // Per-node secrets objects assigned to each DON member. 
-  // When using per-node secrets, nodes can only use secrets which they have been assigned.
-  perNodeSecrets: [],
+
+  secrets: {
+    soundchartAppId: process.env.SOUNDCHART_APP_ID,
+    soundchartApiKey: process.env.SOUNDCHART_API_KEY,
+    mailgunApiKey: process.env.MAILGUN_API_KEY,
+  },
+
+  perNodeSecrets: [
+    {
+      soundchartAppId: process.env.SOUNDCHART_APP_ID,
+      soundchartApiKey: process.env.SOUNDCHART_API_KEY,
+      mailgunApiKey: process.env.MAILGUN_API_KEY,
+    },
+
+    {
+      soundchartAppId: process.env.SOUNDCHART_APP_ID,
+      soundchartApiKey: process.env.SOUNDCHART_API_KEY,
+      mailgunApiKey: "",
+    },
+
+    {
+      soundchartAppId: process.env.SOUNDCHART_APP_ID,
+      soundchartApiKey: process.env.SOUNDCHART_API_KEY,
+      mailgunApiKey: "",
+    },
+
+    {
+      soundchartAppId: process.env.SOUNDCHART_APP_ID,
+      soundchartApiKey: process.env.SOUNDCHART_API_KEY,
+      mailgunApiKey: "",
+    },
+  ],
 }
 
 module.exports = requestConfig

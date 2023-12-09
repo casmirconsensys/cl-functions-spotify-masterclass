@@ -76,32 +76,32 @@ task("functions-simulate-twilio", "Simulates an end-to-end fulfillment locally f
     requestConfig.DONPublicKey = DONPublicKey.slice(2)
     const request = await buildRequest(requestConfig)
 
-    // Add Artist data (wallet address) to the RecordLabel contract.
+    // Add Playlist data (wallet address) to the RecordLabel contract.
     if (!accounts[1])
-      throw new Error("Artist Wallet Address missing - you may need to add a second private key to hardhat config.")
+      throw new Error("Playlist Wallet Address missing - you may need to add a second private key to hardhat config.")
 
-    const artistAddress = accounts[1].address // This pretends your deployer wallet is the artist's.
-    if (!artistAddress || !ethers.utils.isAddress(artistAddress)) {
+    const playlistAddress = accounts[1].address // This pretends your deployer wallet is the playlist's.
+    if (!playlistAddress || !ethers.utils.isAddress(playlistAddress)) {
       throw new Error("Invalid Second Wallet Address. Please check SECOND_PRIVATE_KEY in env vars.")
     }
 
-    const artistId = request.args[0]
-    const artistCurrentBalance = await stableCoinContract.balanceOf(artistAddress)
+    const playlistId = request.args[0]
+    const playlistCurrentBalance = await stableCoinContract.balanceOf(playlistAddress)
 
     try {
-      const setArtistDataTx = await clientContract.setArtistData(
-        artistId,
-        request.args[1], // Artist Name
-        request.args[3], // Artist email
+      const setPlaylistDataTx = await clientContract.setPlaylistData(
+        playlistId,
+        request.args[1], // Playlist Name
+        request.args[3], // Playlist email
         request.args[2], // Last Listener Count
         0, //last paid amount - 18 decimal places
         0, // total paid till date - 18 decimal places
-        artistAddress
+        playlistAddress
       )
-      await setArtistDataTx.wait(1)
+      await setPlaylistDataTx.wait(1)
     } catch (error) {
       console.log(
-        `\nError writing artist data for ${requestConfig.args[0]} at address ${accounts[1]} to the Record Label: ${error}`
+        `\nError writing playlist data for ${requestConfig.args[0]} at address ${accounts[1]} to the Record Label: ${error}`
       )
       throw error
     }
@@ -153,19 +153,19 @@ task("functions-simulate-twilio", "Simulates an end-to-end fulfillment locally f
         resolve()
       }
 
-      // Listen for the ArtistPaid event & log the simulated response returned to the client contract
-      clientContract.on("ArtistPaid", async (artistId, amountDue) => {
-        console.log("\n__Simulated On-Chain Response - Artist Paid__\n")
-        if (artistId !== requestConfig.args[0]) {
-          throw new Error(`ArtistIds don\'t match ${requestConfig.args[0]} is not equal to ${artistId}`)
+      // Listen for the PlaylistPaid event & log the simulated response returned to the client contract
+      clientContract.on("PlaylistPaid", async (playlistId, amountDue) => {
+        console.log("\n__Simulated On-Chain Response - Playlist Paid__\n")
+        if (playlistId !== requestConfig.args[0]) {
+          throw new Error(`PlaylistIds don\'t match ${requestConfig.args[0]} is not equal to ${playlistId}`)
         }
         // Check for & log a successful payment
         if (amountDue.toString()) {
-          console.log(`\nArtist was paid ${amountDue / 1e18} STC\n`)
+          console.log(`\nPlaylist was paid ${amountDue / 1e18} STC\n`)
         }
-        const artistNewBalance = await stableCoinContract.balanceOf(artistAddress)
+        const playlistNewBalance = await stableCoinContract.balanceOf(playlistAddress)
         console.log(
-          `\nArtist ${artistId}'s balance has been updated from ${artistCurrentBalance} to ${artistNewBalance}\n`
+          `\nPlaylist ${playlistId}'s balance has been updated from ${playlistCurrentBalance} to ${playlistNewBalance}\n`
         )
       })
 
